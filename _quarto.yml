@@ -6,7 +6,7 @@ website:
   description: "Systems Biology and Bioinformatics PhD Student at CWRU SOM"   # A brief slogan (optional)
   image: img/lwetzel.jpg
   
-  favicon: img/Liu Lab condensed.png
+  favicon: img/Liu Lab (2).png
   
   # start of the navigation bar at the top of the website
   navbar:

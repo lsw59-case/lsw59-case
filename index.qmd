@@ -8,8 +8,8 @@ about:
       text: Github
       href: https://github.com/lsw59-case
     - icon: r-square-fill
-    - text: ResearchGate
-    - href: https://www.researchgate.net/profile/Liam-Wetzel-2?ev=hdr_xprf
+      text: ResearchGate
+      href: https://www.researchgate.net/profile/Liam-Wetzel-2?ev=hdr_xprf
     - icon: linkedin
       text: LinkedIn
       href: https://www.linkedin.com/in/liam-wetzel/
