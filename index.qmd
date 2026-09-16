@@ -27,9 +27,5 @@ Hello! My name is Liam Wetzel. I am a PhD student in Systems Biology and Bioinfo
 
 Please feel free to [contact me](mailto:lsw59@case.edu) if you have any questions or would like to discuss potential projects.
 
-```{=html}
-<div  style="margin: 30px; text-align: center;">
-<a class="btn btn-primary" href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/" role="button" target="_blank" style="padding: 15px 30px;">View the tutorial for this template (+ download link)</a>
-</div>
-```
+
 
