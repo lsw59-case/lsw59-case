@@ -1,0 +1,35 @@
+---
+about:
+  template: jolla
+  id: about-block
+  image: "img/lwetzel.jpg"
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com/lsw59-case
+    - icon: r-square-fill
+    - text: ResearchGate
+    - href: https://www.researchgate.net/profile/Liam-Wetzel-2?ev=hdr_xprf
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/liam-wetzel/
+    - icon: envelope
+      text: Email
+      href: "mailto:lsw59@case.edu"  
+---
+
+::: {#about-block}
+:::
+
+# Welcome to my website!
+
+Hello! My name is Liam Wetzel. I am a PhD student in Systems Biology and Bioinformatics at Case Western Reserve University, School of Medicine. My research focuses on MTCH2, a mitochondrial outer-membrane (OMM) protein, and its role in regulating the insertion of tail-anchored proteins into the OMM. MTCH2 has been shown to have diverse regulatory roles, but I am most interested in how MTCH2 may modulate the cell's two major protein-degradation routes: the ubiquitin-proteasome system (UPS) and the autophagy-lysosome pathway (ALP). Both of these systems have been shown, when dysfunctional, to contribute to Alzheimer's disease and the aggregation of tau neurofibrillary tangles. 
+
+Please feel free to [contact me](mailto:lsw59@case.edu) if you have any questions or would like to discuss potential projects.
+
+```{=html}
+<div  style="margin: 30px; text-align: center;">
+<a class="btn btn-primary" href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/" role="button" target="_blank" style="padding: 15px 30px;">View the tutorial for this template (+ download link)</a>
+</div>
+```
+

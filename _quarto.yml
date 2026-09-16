@@ -1,0 +1,71 @@
+# This file controls the settings for your Quarto template from www.marvinschmitt.com
+
+# website settings
+website:
+  title: "Liam Wetzel"                                # Your name
+  description: "Systems Biology and Bioinformatics PhD Student at CWRU SOM"   # A brief slogan (optional)
+  image: img/lwetzel.jpg
+  
+  favicon: img/Liu Lab condensed.png
+  
+  # start of the navigation bar at the top of the website
+  navbar:
+    pinned: true
+    logo: /img/Liu Lab (2).png
+    
+    # your sub-pages
+    left:
+      - text: "Projects"
+        href: projects/index.qmd
+      - text: "CV"
+        href: cv/index.qmd
+    
+    # your social media handles
+    right:
+      - icon: r-square-fill
+        href: https://www.researchgate.net/profile/Liam-Wetzel-2?ev=hdr_xprf
+      - icon: linkedin
+        href: https://www.linkedin.com/in/liam-wetzel/
+      - icon: envelope
+        aria-label: email
+        href: "mailto:lsw59@case.edu"  
+  
+  
+
+# Don't touch unless you know what you are doing :) ------------
+  search: 
+    location: navbar
+    type: textbox
+  page-footer: 
+    left: |
+      <span class="faux-block">&#169; 2023 Marvin Schmitt CC BY-SA 4.0</span>
+    center: |
+      <span class="faux-block"><a href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/">View the tutorial for this template!</a></span>
+    right: |
+      <span class="faux-block"><a href="https://github.com/marvinschmitt/quarto-website-template/">View source on GitHub</a></span>
+
+project:
+  type: website
+  output-dir: docs
+
+  preview: 
+    port: 22222
+    browser: true
+    watch-inputs: true
+    navigate: true
+
+execute:
+  freeze: true
+
+format:
+  html:
+    fontsize: 1.1em
+    theme: 
+      - pulse
+      - html/styles.scss
+    toc: false
+    code-link: true
+    anchor-sections: true
+    fig-cap-location: margin
+    reference-location: margin
+    footnotes-hover: true
