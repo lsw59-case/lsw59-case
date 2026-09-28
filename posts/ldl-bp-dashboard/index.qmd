@@ -1,5 +1,6 @@
 ---
-title: "Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out"
+title: "Does LDL Cholesterol Track with Blood Pressure After Age 45?"
+subtitle: "Building a NHANES Dashboard to Find Out"
 description: "How I built a Quarto dashboard on NHANES 2017-March 2020 data, the hypotheses I tested, and what the data say about LDL, blood pressure, sex, and race/ethnicity."
 author: "Liam Wetzel"
 date: 2026-09-28
@@ -46,12 +47,6 @@ male   <- sex_slopes |> filter(sex == "Male")
 female <- sex_slopes |> filter(sex == "Female")
 ```
 
-::: {.callout-tip}
-## Open the dashboard
-The interactive dashboard that goes with this post is
-[here](../../dashboard.qmd). This post explains why I built it, how I built
-it, and what I found.
-:::
 
 ## Why this question?
 
@@ -118,48 +113,6 @@ Before looking at the results, I wrote down what I expected:
 5. The LDL-blood pressure relationship is stronger in women than in men, and
    differs across racial and ethnic groups.
 
-## How I built the dashboard
-
-The dashboard is a single Quarto file (`dashboard.qmd`) using the
-`format: dashboard` output, rendered as part of this website and hosted on
-GitHub Pages. All data cleaning lives in one R script, all statistics in
-another, and plotting functions in a third. Both the dashboard and this post
-read from the same analysis script, so their numbers cannot disagree. I
-organized the dashboard around five elements:
-
-**Purposeful design.** The Overview page opens with five headline numbers
-(sample size, median LDL, the share with LDL of 130 or higher, the share with
-blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a
-reader knows the shape of the data before any test.
-
-**Effective visualizations.** Each analysis pairs one chart with its test
-results: violin-and-box plots for comparing means, stacked percentage bars for
-comparing proportions, and a forest plot for the sex-by-ethnicity slopes.
-
-**User-friendly layout.** Pages follow the order of the questions: overview,
-free exploration, comparisons of means, comparisons of proportions, the main
-sex-and-ethnicity question, and full data documentation. Every analysis page
-uses the same pattern of chart on top, then tabs for the takeaway, the
-estimates, and the group summaries.
-
-**Accurate data.** Every number is computed at render time from the cleaned
-data, and the dashboard shows both the data-retrieval date and the time it was
-last rendered.
-
-**Accessibility.** Colors come from the Okabe-Ito palette, which stays
-distinguishable for common color-vision deficiencies. Static charts carry alt
-text, and the layout reflows on phones.
-
-Because GitHub Pages only serves static files, the Explore page uses
-Observable JS rather than Shiny. The data are passed from R with
-`ojs_define()`, and the filters (sex, race/ethnicity, age range, and blood
-pressure measure) run entirely in the reader's browser.
-
-Building it taught me a few things the hard way. A stray line of three dashes
-at the end of the file became a mysterious blank tab, which I finally found by
-inspecting the rendered page in my browser. And my Quarto setup silently
-dropped Observable chunks that only defined values, so I rewrote the chart
-and summary table as self-contained blocks that compute everything they need.
 
 ## What I found
 
@@ -271,3 +224,35 @@ models, and to look at diastolic blood pressure alongside systolic. I would
 also like to try the Martin-Hopkins LDL estimate, which NHANES also provides
 and which is more accurate than the Friedewald equation when triglycerides are
 high.
+
+## How I built the dashboard
+
+The dashboard is a single Quarto file (`dashboard.qmd`) using the
+`format: dashboard` output, rendered as part of this website and hosted on
+GitHub Pages. All data cleaning lives in one R script, all statistics in
+another, and plotting functions in a third. Both the dashboard and this post
+read from the same analysis script, so their numbers cannot disagree. I
+organized the dashboard around five elements:
+
+**Purposeful design.** The Overview page opens with five headline numbers
+(sample size, median LDL, the share with LDL of 130 or higher, the share with
+blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a
+reader knows the shape of the data before any test.
+
+**Effective visualizations.** Each analysis pairs one chart with its test
+results: violin-and-box plots for comparing means, stacked percentage bars for
+comparing proportions, and a forest plot for the sex-by-ethnicity slopes.
+
+**User-friendly layout.** Pages follow the order of the questions: overview,
+free exploration, comparisons of means, comparisons of proportions, the main
+sex-and-ethnicity question, and full data documentation. Every analysis page
+uses the same pattern of chart on top, then tabs for the takeaway, the
+estimates, and the group summaries.
+
+**Accurate data.** Every number is computed at render time from the cleaned
+data, and the dashboard shows both the data-retrieval date and the time it was
+last rendered.
+
+**Accessibility.** Colors come from the Okabe-Ito palette, which stays
+distinguishable for common color-vision deficiencies. Static charts carry alt
+text, and the layout reflows on phones.

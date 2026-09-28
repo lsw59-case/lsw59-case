@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2026-09-28">
 <meta name="description" content="How I built a Quarto dashboard on NHANES 2017-March 2020 data, the hypotheses I tested, and what the data say about LDL, blood pressure, sex, and race/ethnicity.">
 
-<title>Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out – Liam Wetzel</title>
+<title>Does LDL Cholesterol Track with Blood Pressure After Age 45? – Liam Wetzel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -110,8 +110,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="module" src="../../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
-<link href="../../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
 
 
 </head>
@@ -188,7 +186,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out</h1>
+<h1 class="title">Does LDL Cholesterol Track with Blood Pressure After Age 45?</h1>
+<p class="subtitle lead">Building a NHANES Dashboard to Find Out</p>
   <div class="quarto-categories">
     <div class="quarto-category">NHANES</div>
     <div class="quarto-category">Quarto</div>
@@ -234,19 +233,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Open the dashboard
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The interactive dashboard that goes with this post is <a href="../../dashboard.html">here</a>. This post explains why I built it, how I built it, and what I found.</p>
-</div>
-</div>
 <section id="why-this-question" class="level2">
 <h2 class="anchored" data-anchor-id="why-this-question">Why this question?</h2>
 <p>High LDL cholesterol and high blood pressure are two of the most important modifiable risk factors for heart attack and stroke, and they often show up in the same people. I wanted to know whether, in a large sample of U.S. adults, people with higher LDL also tend to have higher blood pressure, or whether the two risk factors travel more independently than we might assume.</p>
@@ -463,17 +449,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>The LDL-blood pressure relationship is stronger in women than in men, and differs across racial and ethnic groups.</li>
 </ol>
 </section>
-<section id="how-i-built-the-dashboard" class="level2">
-<h2 class="anchored" data-anchor-id="how-i-built-the-dashboard">How I built the dashboard</h2>
-<p>The dashboard is a single Quarto file (<code>dashboard.qmd</code>) using the <code>format: dashboard</code> output, rendered as part of this website and hosted on GitHub Pages. All data cleaning lives in one R script, all statistics in another, and plotting functions in a third. Both the dashboard and this post read from the same analysis script, so their numbers cannot disagree. I organized the dashboard around five elements:</p>
-<p><strong>Purposeful design.</strong> The Overview page opens with five headline numbers (sample size, median LDL, the share with LDL of 130 or higher, the share with blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a reader knows the shape of the data before any test.</p>
-<p><strong>Effective visualizations.</strong> Each analysis pairs one chart with its test results: violin-and-box plots for comparing means, stacked percentage bars for comparing proportions, and a forest plot for the sex-by-ethnicity slopes.</p>
-<p><strong>User-friendly layout.</strong> Pages follow the order of the questions: overview, free exploration, comparisons of means, comparisons of proportions, the main sex-and-ethnicity question, and full data documentation. Every analysis page uses the same pattern of chart on top, then tabs for the takeaway, the estimates, and the group summaries.</p>
-<p><strong>Accurate data.</strong> Every number is computed at render time from the cleaned data, and the dashboard shows both the data-retrieval date and the time it was last rendered.</p>
-<p><strong>Accessibility.</strong> Colors come from the Okabe-Ito palette, which stays distinguishable for common color-vision deficiencies. Static charts carry alt text, and the layout reflows on phones.</p>
-<p>Because GitHub Pages only serves static files, the Explore page uses Observable JS rather than Shiny. The data are passed from R with <code>ojs_define()</code>, and the filters (sex, race/ethnicity, age range, and blood pressure measure) run entirely in the reader’s browser.</p>
-<p>Building it taught me a few things the hard way. A stray line of three dashes at the end of the file became a mysterious blank tab, which I finally found by inspecting the rendered page in my browser. And my Quarto setup silently dropped Observable chunks that only defined values, so I rewrote the chart and summary table as self-contained blocks that compute everything they need.</p>
-</section>
 <section id="what-i-found" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="what-i-found">What I found</h2>
 <p>All intervals are 90% confidence intervals.</p>
@@ -527,22 +502,20 @@ Figure&nbsp;2: Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by se
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
 <p>The natural next step is to add medication use from P_BPQ and refit the models, and to look at diastolic blood pressure alongside systolic. I would also like to try the Martin-Hopkins LDL estimate, which NHANES also provides and which is more accurate than the Friedewald equation when triglycerides are high.</p>
+</section>
+<section id="how-i-built-the-dashboard" class="level2">
+<h2 class="anchored" data-anchor-id="how-i-built-the-dashboard">How I built the dashboard</h2>
+<p>The dashboard is a single Quarto file (<code>dashboard.qmd</code>) using the <code>format: dashboard</code> output, rendered as part of this website and hosted on GitHub Pages. All data cleaning lives in one R script, all statistics in another, and plotting functions in a third. Both the dashboard and this post read from the same analysis script, so their numbers cannot disagree. I organized the dashboard around five elements:</p>
+<p><strong>Purposeful design.</strong> The Overview page opens with five headline numbers (sample size, median LDL, the share with LDL of 130 or higher, the share with blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a reader knows the shape of the data before any test.</p>
+<p><strong>Effective visualizations.</strong> Each analysis pairs one chart with its test results: violin-and-box plots for comparing means, stacked percentage bars for comparing proportions, and a forest plot for the sex-by-ethnicity slopes.</p>
+<p><strong>User-friendly layout.</strong> Pages follow the order of the questions: overview, free exploration, comparisons of means, comparisons of proportions, the main sex-and-ethnicity question, and full data documentation. Every analysis page uses the same pattern of chart on top, then tabs for the takeaway, the estimates, and the group summaries.</p>
+<p><strong>Accurate data.</strong> Every number is computed at render time from the cleaned data, and the dashboard shows both the data-retrieval date and the time it was last rendered.</p>
+<p><strong>Accessibility.</strong> Colors come from the Okabe-Ito palette, which stays distinguishable for common color-vision deficiencies. Static charts carry alt text, and the layout reflows on phones.</p>
 
 
 </section>
 
 </main> <!-- /main -->
-<script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script>
-<script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../../posts/ldl-bp-dashboard";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "../..";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
-</script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

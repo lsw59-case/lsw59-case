@@ -84,9 +84,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -231,7 +231,7 @@ window.Quarto = {
 
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="TkhBTkVTJTJDUXVhcnRvJTJDUiUyQ2NhcmRpb3Zhc2N1bGFyJTIwaGVhbHRo" data-listing-date-sort="1790568000000" data-listing-file-modified-sort="1790634063000" data-listing-date-modified-sort="1790634063000" data-listing-reading-time-sort="9" data-listing-word-count-sort="1715">
+<div class="quarto-post image-right" data-index="0" data-categories="TkhBTkVTJTJDUXVhcnRvJTJDUiUyQ2NhcmRpb3Zhc2N1bGFyJTIwaGVhbHRo" data-listing-date-sort="1790568000000" data-listing-file-modified-sort="1790636975469" data-listing-date-modified-sort="1790636975000" data-listing-reading-time-sort="8" data-listing-word-count-sort="1590">
 <div class="thumbnail"><a href="./posts/ldl-bp-dashboard/index.html" class="no-external">
 
 <p class="card-img-top"><img loading='lazy' src="posts\ldl-bp-dashboard\index_files\figure-html\fig-bp-by-race-1.png" alt="Stacked percentage bars of blood pressure category for five race and ethnicity groups."  class="thumbnail-image card-img"/></p>
@@ -239,8 +239,11 @@ window.Quarto = {
 </a></div>
 <div class="body">
 <h3 class="no-anchor listing-title">
-<a href="./posts/ldl-bp-dashboard/index.html" class="no-external">Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out</a>
+<a href="./posts/ldl-bp-dashboard/index.html" class="no-external">Does LDL Cholesterol Track with Blood Pressure After Age 45?</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/ldl-bp-dashboard/index.html" class="no-external">Building a NHANES Dashboard to Find Out</a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('TkhBTkVT'); return false;">NHANES</div>
