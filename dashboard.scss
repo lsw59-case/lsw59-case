@@ -34,11 +34,3 @@ a:focus-visible, button:focus-visible, input:focus-visible, .nav-link:focus-visi
   display: none !important;
 }
 
-// Keep Observable inputs inside the sidebar (removes stray scrollbars)
-.sidebar .cell-output-display {
-  overflow-x: hidden;
-}
-
-.sidebar input[type="range"] {
-  max-width: 100%;
-}

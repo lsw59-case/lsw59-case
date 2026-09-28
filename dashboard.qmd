@@ -47,10 +47,6 @@ int_race  <- interaction_tests |> filter(term == "ldl10:race_eth")
 stage2    <- e_props |> filter(bp_cat == "Stage 2") |> arrange(pct)
 ```
 
-```{r}
-#| label: send-data-to-ojs
-ojs_define(nh_raw = nh |> select(sex, race_eth, age, ldl, sbp, dbp))
-```
 # Overview
 
 ## Row {height=20%}
@@ -107,8 +103,7 @@ between men and women or across racial and ethnic groups?
 quick, data-grounded look at how two major cardiovascular risk factors
 relate to each other.
 
-**How to use it.** Start with the headline numbers above. *Explore* lets you
-filter the data yourself. *Compare means* and *Compare proportions* hold the
+**How to use it.** Start with the headline numbers above. *Compare means* and *Compare proportions* hold the
 formal tests. *Sex & ethnicity* answers the main question. *Data* documents
 every variable.
 
@@ -128,131 +123,7 @@ plot_sbp_by_group(nh, ldl_cat, "LDL category (mg/dL)")
 plot_sample_composition(nh)
 ```
 
-# Explore
 
-## {.sidebar}
-
-```{ojs}
-viewof sexes = Inputs.checkbox(["Male", "Female"],
-  {value: ["Male", "Female"], label: "Sex"})
-
-viewof races = Inputs.checkbox(
-  ["NH White", "NH Black", "Hispanic", "NH Asian", "Other/Multiracial"],
-  {value: ["NH White", "NH Black", "Hispanic", "NH Asian", "Other/Multiracial"],
-   label: "Race/ethnicity"})
-
-viewof ageMin = Inputs.range([45, 79], {value: 45, step: 1, label: "Youngest age"})
-viewof ageMax = Inputs.range([45, 79], {value: 79, step: 1, label: "Oldest age"})
-
-viewof outcome = Inputs.radio(
-  new Map([["Systolic BP", "sbp"], ["Diastolic BP", "dbp"]]),
-  {value: "sbp", label: "Blood pressure measure"})
-
-viewof colorBy = Inputs.radio(
-  new Map([["Sex", "sex"], ["Race/ethnicity", "race_eth"]]),
-  {value: "sex", label: "Color points and lines by"})
-
-viewof splitSex = Inputs.toggle({label: "Separate panels for men and women", value: false})
-```
-
-Lines are least-squares fits with 90% confidence bands. Filters change
-this page only; the formal analyses on other pages use the full sample.
-
-## Column
-
-### Row {height=65%}
-
-```{ojs}
-//| title: "LDL cholesterol vs. blood pressure (filtered sample)"
-{
-  // Colors match the R plots (Okabe-Ito)
-  const palettes = {
-    sex:      {domain: ["Male", "Female"], range: ["#0072B2", "#D55E00"]},
-    race_eth: {domain: ["NH White", "NH Black", "Hispanic", "NH Asian", "Other/Multiracial"],
-               range:  ["#E69F00", "#56B4E9", "#009E73", "#CC79A7", "#555555"]}
-  }
-
-  // Keep only the participants that match the sidebar filters
-  const data = transpose(nh_raw).filter(d =>
-    sexes.includes(d.sex) && races.includes(d.race_eth) &&
-    d.age >= ageMin && d.age <= ageMax)
-
-  const facet  = splitSex ? {fx: "sex"} : {}
-  const yLabel = outcome === "sbp" ? "Mean systolic BP (mm Hg)" : "Mean diastolic BP (mm Hg)"
-
-  return Plot.plot({
-    grid: true,
-    marginLeft: 55,
-    color: {...palettes[colorBy], legend: true},
-    x: {label: "LDL cholesterol (mg/dL)"},
-    y: {label: yLabel},
-    fx: {label: null},
-    marks: [
-      Plot.dot(data, {
-        x: "ldl", y: outcome, fill: colorBy, fillOpacity: 0.3, r: 2.2,
-        channels: {Age: "age", "Race/ethnicity": "race_eth", Sex: "sex"},
-        tip: true, ...facet
-      }),
-      Plot.linearRegressionY(data, {
-        x: "ldl", y: outcome, stroke: colorBy, strokeWidth: 2.5, ci: 0.90, ...facet
-      })
-    ]
-  })
-}
-```
-
-### Row {height=35%}
-
-```{ojs}
-//| title: "Summary of the filtered sample"
-{
-  const groups = {
-    sex:      ["Male", "Female"],
-    race_eth: ["NH White", "NH Black", "Hispanic", "NH Asian", "Other/Multiracial"]
-  }
-
-  const data = transpose(nh_raw).filter(d =>
-    sexes.includes(d.sex) && races.includes(d.race_eth) &&
-    d.age >= ageMin && d.age <= ageMax)
-
-  // Pearson correlation (JavaScript has no built-in cor())
-  const pearson = (x, y) => {
-    const n = x.length
-    if (n < 3) return NaN
-    const mx = d3.mean(x), my = d3.mean(y)
-    let sxy = 0, sxx = 0, syy = 0
-    for (let i = 0; i < n; i++) {
-      const dx = x[i] - mx, dy = y[i] - my
-      sxy += dx * dy; sxx += dx * dx; syy += dy * dy
-    }
-    return sxy / Math.sqrt(sxx * syy)
-  }
-
-  const summarize = (rows, label) => ({
-    Group: label,
-    n: rows.length,
-    "Mean LDL (mg/dL)": d3.mean(rows, d => d.ldl),
-    "Mean BP (mm Hg)":  d3.mean(rows, d => d[outcome]),
-    "Correlation r":    pearson(rows.map(d => d.ldl), rows.map(d => d[outcome]))
-  })
-
-  const rows = [
-    ...groups[colorBy]
-      .map(level => summarize(data.filter(d => d[colorBy] === level), level))
-      .filter(row => row.n > 0),
-    summarize(data, "All selected")
-  ]
-
-  return Inputs.table(rows, {
-    format: {
-      "Mean LDL (mg/dL)": x => x?.toFixed(1),
-      "Mean BP (mm Hg)":  x => x?.toFixed(1),
-      "Correlation r":    x => Number.isNaN(x) ? "-" : x.toFixed(2)
-    },
-    rows: 8
-  })
-}
-```
 # Compare means {orientation="columns"}
 
 ## Column {width=50%}
