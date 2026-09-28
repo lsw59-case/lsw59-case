@@ -1,0 +1,44 @@
+/*-- scss:rules --*/
+
+// Tabular figures so numbers in value boxes and tables line up
+.value-box-value, table, .gt_table {
+  font-variant-numeric: tabular-nums;
+}
+
+.value-box-value {
+  font-weight: 700;
+}
+
+.card-title, .card-header {
+  font-weight: 600;
+}
+
+// Visible keyboard focus for inputs, tabs, and links (accessibility)
+a:focus-visible, button:focus-visible, input:focus-visible, .nav-link:focus-visible {
+  outline: 3px solid #E69F00;
+  outline-offset: 2px;
+}
+
+// White value boxes: thin outline, icon and number in the site's primary color
+.bslib-value-box {
+  border: 1px solid $gray-300 !important;
+}
+
+.bslib-value-box .value-box-showcase,
+.bslib-value-box .value-box-value {
+  color: $primary !important;
+}
+
+// The site footer has no place in a full-screen dashboard layout
+.nav-footer {
+  display: none !important;
+}
+
+// Keep Observable inputs inside the sidebar (removes stray scrollbars)
+.sidebar .cell-output-display {
+  overflow-x: hidden;
+}
+
+.sidebar input[type="range"] {
+  max-width: 100%;
+}

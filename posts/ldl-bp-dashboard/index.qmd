@@ -1,0 +1,273 @@
+---
+title: "Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out"
+description: "How I built a Quarto dashboard on NHANES 2017-March 2020 data, the hypotheses I tested, and what the data say about LDL, blood pressure, sex, and race/ethnicity."
+author: "Liam Wetzel"
+date: 2026-09-28
+date-modified: last-modified
+date-format: iso
+categories: [NHANES, Quarto, R, cardiovascular health]
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+library(broom)
+library(Epi)
+library(tidyverse)
+
+nh   <- readRDS(here("data", "nh_ldl_bp.rds"))
+meta <- readRDS(here("data", "nh_meta.rds"))
+
+source(here("R", "helpers.R"))
+source(here("R", "analyses.R"))
+
+# Shortcuts to single results used in the text
+b_welch   <- b_results |> filter(str_detect(Method, "Welch"))
+d_rr      <- d_results |> filter(Measure == "Relative risk")
+tukey_sig <- sum(c_tukey$conf.low > 0 | c_tukey$conf.high < 0)
+int_sex   <- interaction_tests |> filter(term == "ldl10:sex")
+int_race  <- interaction_tests |> filter(term == "ldl10:race_eth")
+stage2    <- e_props |> filter(bp_cat == "Stage 2") |> arrange(pct)
+
+# Extra results that appear only in this post
+age_cor <- nh |>
+  summarise(r_age_ldl = cor(age, ldl), r_age_sbp = cor(age, sbp))
+
+sex_slopes <- nh |>
+  group_by(sex) |>
+  group_modify(~ tidy(lm(sbp ~ ldl10 + age + race_eth, data = .x),
+                      conf.int = TRUE, conf.level = conf_level)) |>
+  ungroup() |>
+  filter(term == "ldl10")
+
+male   <- sex_slopes |> filter(sex == "Male")
+female <- sex_slopes |> filter(sex == "Female")
+```
+
+::: {.callout-tip}
+## Open the dashboard
+The interactive dashboard that goes with this post is
+[here](../../dashboard.qmd). This post explains why I built it, how I built
+it, and what I found.
+:::
+
+## Why this question?
+
+High LDL cholesterol and high blood pressure are two of the most important
+modifiable risk factors for heart attack and stroke, and they often show up in
+the same people. I wanted to know whether, in a large sample of U.S. adults,
+people with higher LDL also tend to have higher blood pressure, or whether the
+two risk factors travel more independently than we might assume.
+
+I focused on adults aged 45 to 79 for two reasons. Both LDL and blood pressure
+typically climb through midlife, and this is the age range where women's
+cardiovascular risk profile shifts around menopause, which makes a comparison
+of men and women especially interesting. I also compared racial and ethnic
+groups, since the burden of hypertension in the United States is not evenly
+shared.
+
+## The data
+
+I used the National Health and Nutrition Examination Survey (NHANES)
+2017-March 2020 pre-pandemic files, pulled into R with the **nhanesA**
+package on `r format(meta$retrieved_on, "%B %d, %Y")`. Three tables were
+merged on the participant ID (SEQN):
+
+- **P_DEMO** for age, sex, and race/ethnicity
+- **P_TRIGLY** for LDL cholesterol (Friedewald equation, mg/dL)
+- **P_BPXO** for oscillometric blood pressure, averaged over two or three readings
+
+LDL is measured only in the morning fasting subsample, which is the main
+reason the final sample is smaller than the full survey:
+
+| Step | Participants |
+|:-----|-------------:|
+| All participants in P_DEMO | `r fmt(meta$n_demo, 0)` |
+| Interviewed and examined, age 45-79 | `r fmt(meta$n_eligible, 0)` |
+| ...with an LDL result (fasting subsample) | `r fmt(meta$n_with_ldl, 0)` |
+| ...and complete data on every variable | `r fmt(meta$n_complete, 0)` |
+
+Participants aged 80 were excluded because NHANES codes everyone 80 and older
+as 80. One participant had an LDL of `r min(nh$ldl)` mg/dL; I kept this
+value, since very low LDL is plausible with intensive lipid-lowering therapy.
+Survey weights were not used, so the results describe this sample rather than
+the U.S. population as a whole.
+
+```{r}
+#| label: show-prep-code
+#| echo: true
+#| eval: false
+#| code-fold: true
+#| code-summary: "Show the data ingest and cleaning code"
+#| file: ../../R/prep_nhanes.R
+```
+
+## Hypotheses
+
+Before looking at the results, I wrote down what I expected:
+
+1. Adults with LDL of 130 mg/dL or higher have higher mean systolic blood
+   pressure than adults with lower LDL.
+2. Mean systolic blood pressure rises steadily across LDL categories
+   (below 100, 100-129, 130-159, and 160 or higher).
+3. Blood pressure of 130/80 or higher is more common among adults with LDL of
+   130 or higher.
+4. The mix of blood pressure categories differs across racial and ethnic groups.
+5. The LDL-blood pressure relationship is stronger in women than in men, and
+   differs across racial and ethnic groups.
+
+## How I built the dashboard
+
+The dashboard is a single Quarto file (`dashboard.qmd`) using the
+`format: dashboard` output, rendered as part of this website and hosted on
+GitHub Pages. All data cleaning lives in one R script, all statistics in
+another, and plotting functions in a third. Both the dashboard and this post
+read from the same analysis script, so their numbers cannot disagree. I
+organized the dashboard around five elements:
+
+**Purposeful design.** The Overview page opens with five headline numbers
+(sample size, median LDL, the share with LDL of 130 or higher, the share with
+blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a
+reader knows the shape of the data before any test.
+
+**Effective visualizations.** Each analysis pairs one chart with its test
+results: violin-and-box plots for comparing means, stacked percentage bars for
+comparing proportions, and a forest plot for the sex-by-ethnicity slopes.
+
+**User-friendly layout.** Pages follow the order of the questions: overview,
+free exploration, comparisons of means, comparisons of proportions, the main
+sex-and-ethnicity question, and full data documentation. Every analysis page
+uses the same pattern of chart on top, then tabs for the takeaway, the
+estimates, and the group summaries.
+
+**Accurate data.** Every number is computed at render time from the cleaned
+data, and the dashboard shows both the data-retrieval date and the time it was
+last rendered.
+
+**Accessibility.** Colors come from the Okabe-Ito palette, which stays
+distinguishable for common color-vision deficiencies. Static charts carry alt
+text, and the layout reflows on phones.
+
+Because GitHub Pages only serves static files, the Explore page uses
+Observable JS rather than Shiny. The data are passed from R with
+`ojs_define()`, and the filters (sex, race/ethnicity, age range, and blood
+pressure measure) run entirely in the reader's browser.
+
+Building it taught me a few things the hard way. A stray line of three dashes
+at the end of the file became a mysterious blank tab, which I finally found by
+inspecting the rendered page in my browser. And my Quarto setup silently
+dropped Observable chunks that only defined values, so I rewrote the chart
+and summary table as self-contained blocks that compute everything they need.
+
+## What I found
+
+All intervals are 90% confidence intervals.
+
+**Higher LDL did not mean higher average systolic blood pressure, at first
+glance.** Comparing adults with LDL of 130 or higher to everyone else, the
+difference in mean systolic blood pressure was
+`r fmt_ci(b_welch$estimate, b_welch$conf.low, b_welch$conf.high)` mm Hg
+(Welch's t test). The interval `r ci_position(b_welch$conf.low, b_welch$conf.high)`
+zero, and pooled t, bootstrap, and Wilcoxon rank sum estimates all told the
+same story, so this result does not hinge on a normality assumption. Across
+four LDL categories, a one-way ANOVA gave F = `r fmt(c_anova$statistic[1], 2)`
+(`r fmt_p(c_anova$p.value[1])`), with `r tukey_sig` of
+`r nrow(c_tukey)` Tukey comparisons excluding zero, but LDL category explained
+only `r fmt(100 * c_r2, 1)`% of the variation in systolic blood pressure, so
+even where some groups differ, LDL category on its own tells us very little
+about a person's blood pressure. Hypothesis 1 was not supported by this
+unadjusted comparison.
+
+**Hypertensive-range blood pressure was modestly more common with high LDL.**
+Blood pressure of 130/80 or higher was found in
+`r fmt(100 * d_results$estimate[1], 1)`% of adults with LDL of 130 or higher
+and `r fmt(100 * d_results$estimate[2], 1)`% of those with lower LDL, a
+relative risk of `r fmt_ci(d_rr$estimate, d_rr$conf.low, d_rr$conf.high, 2)`.
+This supports hypothesis 3. Why would this analysis find an association when
+the comparison of means did not? The 130/80 threshold also counts diastolic
+pressure, and it asks about crossing a cutoff rather than about the average,
+so a shift near the cutoff can show up here without moving the mean much.
+
+**Blood pressure categories differed across racial and ethnic groups.** The
+chi-square test of independence gave
+`r fmt(e_tidy$statistic, 1)` on `r e_tidy$parameter` df
+(`r fmt_p(e_tidy$p.value)`), supporting hypothesis 4. Stage 2 blood pressure
+ranged from `r fmt(stage2$pct[1], 1)`% of
+`r as.character(stage2$race_eth[1])` adults to
+`r fmt(last(stage2$pct), 1)`% of `r as.character(last(stage2$race_eth))`
+adults.
+
+```{r}
+#| label: fig-bp-by-race
+#| fig-cap: "Blood pressure category by race/ethnicity"
+#| fig-alt: "Stacked percentage bars of blood pressure category for five race and ethnicity groups."
+plot_stacked_pct(nh, race_eth, bp_cat, pal_bp, NULL, "BP category") +
+  coord_flip() +
+  guides(fill = guide_legend(reverse = TRUE))
+```
+
+**Age was hiding the LDL-blood pressure association.** Older participants
+tended to have lower LDL (r = `r fmt(age_cor$r_age_ldl, 2)`) but higher
+systolic blood pressure (r = `r fmt(age_cor$r_age_sbp, 2)`). Because age
+pushes the two in opposite directions, it masks their relationship when age
+is ignored. After adjusting for age, sex, and race/ethnicity, each 10 mg/dL
+higher LDL went with a
+`r fmt_ci(main_slope$estimate, main_slope$conf.low, main_slope$conf.high, 2)`
+mm Hg higher mean systolic blood pressure. That is small per unit, but across
+a 100 mg/dL range of LDL it adds up to about
+`r fmt(10 * main_slope$estimate, 1)` mm Hg.
+
+**The relationship was steeper in men, the opposite of what I expected.** The
+age-adjusted slope was `r fmt_ci(male$estimate, male$conf.low, male$conf.high, 2)`
+mm Hg per 10 mg/dL in men and
+`r fmt_ci(female$estimate, female$conf.low, female$conf.high, 2)` in women.
+The test that directly compares the two slopes gave
+`r fmt_p(int_sex$p.value)`, which is modest evidence of a difference at my
+90% standard. There was no evidence that the slope differed across racial and
+ethnic groups (`r fmt_p(int_race$p.value)`). So hypothesis 5 was not
+supported: the sex difference ran in the other direction, and the ethnic
+differences did not appear.
+
+```{r}
+#| label: fig-forest
+#| fig-cap: "Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by sex and race/ethnicity"
+#| fig-alt: "Forest plot of LDL-systolic blood pressure slopes with 90 percent confidence intervals for each race and ethnicity group, shown separately for men and women."
+#| fig-height: 4.5
+plot_strata_forest(strata_slopes)
+```
+
+## Putting it together
+
+In adults aged 45 to 79, higher LDL goes with slightly higher blood pressure,
+but the association only becomes clear once age is taken into account, and it
+appears stronger in men than in women. The effect is modest for any one person,
+yet at the population level a few mm Hg of systolic pressure is meaningful.
+I can only guess at why the sex difference runs the way it does: statin use
+may differ between men and women, and changes around menopause may shift LDL
+and blood pressure somewhat independently. Both are ideas to test, not
+conclusions.
+
+## Limitations
+
+- **Cross-sectional data.** Each person was measured once, so these are
+  associations, not effects of LDL on blood pressure.
+- **Medication use.** Many adults in this age range take statins or blood
+  pressure drugs. If people with high blood pressure are more likely to be on a
+  statin, treatment could weaken or even reverse the LDL-blood pressure
+  association seen here. The NHANES blood pressure and cholesterol
+  questionnaire (P_BPQ) would allow adjusting for this.
+- **Fasting subsample, no weights.** LDL comes from a morning subsample, and I
+  did not apply survey weights, so the results are not nationally
+  representative.
+- **Smaller groups.** Estimates for NH Asian and Other/Multiracial adults rest
+  on fewer participants and have wider intervals.
+
+## What's next
+
+The natural next step is to add medication use from P_BPQ and refit the
+models, and to look at diastolic blood pressure alongside systolic. I would
+also like to try the Martin-Hopkins LDL estimate, which NHANES also provides
+and which is more accurate than the Friedewald equation when triglycerides are
+high.

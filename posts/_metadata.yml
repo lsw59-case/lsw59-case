@@ -1,0 +1,5 @@
+# Options shared by every post in the posts/ folder
+execute:
+  echo: false
+  warning: false
+  message: false

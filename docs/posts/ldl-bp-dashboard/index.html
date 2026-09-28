@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Liam Wetzel">
+<meta name="dcterms.date" content="2026-09-28">
+<meta name="description" content="How I built a Quarto dashboard on NHANES 2017-March 2020 data, the hypotheses I tested, and what the data say about LDL, blood pressure, sex, and race/ethnicity.">
+
+<title>Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out – Liam Wetzel</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../img/Liu Lab (2).png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-2f3da3d17b5453565cce5adf760519c4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="../../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="../../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../img/Liu Lab (2).png" alt="" class="navbar-logo light-content">
+    <img src="../../img/Liu Lab (2).png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Liam Wetzel</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects/index.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv/index.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dashboard.html"> 
+<span class="menu-text">Dashboard</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.researchgate.net/profile/Liam-Wetzel-2?ev=hdr_xprf"> <i class="bi bi-r-square-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/liam-wetzel/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:lsw59@case.edu"> <i class="bi bi-envelope" role="img" aria-label="email">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Does LDL Cholesterol Track with Blood Pressure After 45? Building an NHANES Dashboard to Find Out</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">NHANES</div>
+    <div class="quarto-category">Quarto</div>
+    <div class="quarto-category">R</div>
+    <div class="quarto-category">cardiovascular health</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    How I built a Quarto dashboard on NHANES 2017-March 2020 data, the hypotheses I tested, and what the data say about LDL, blood pressure, sex, and race/ethnicity.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Liam Wetzel </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2026-09-28</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">2026-09-28</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Open the dashboard
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The interactive dashboard that goes with this post is <a href="../../dashboard.html">here</a>. This post explains why I built it, how I built it, and what I found.</p>
+</div>
+</div>
+<section id="why-this-question" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-question">Why this question?</h2>
+<p>High LDL cholesterol and high blood pressure are two of the most important modifiable risk factors for heart attack and stroke, and they often show up in the same people. I wanted to know whether, in a large sample of U.S. adults, people with higher LDL also tend to have higher blood pressure, or whether the two risk factors travel more independently than we might assume.</p>
+<p>I focused on adults aged 45 to 79 for two reasons. Both LDL and blood pressure typically climb through midlife, and this is the age range where women’s cardiovascular risk profile shifts around menopause, which makes a comparison of men and women especially interesting. I also compared racial and ethnic groups, since the burden of hypertension in the United States is not evenly shared.</p>
+</section>
+<section id="the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-data">The data</h2>
+<p>I used the National Health and Nutrition Examination Survey (NHANES) 2017-March 2020 pre-pandemic files, pulled into R with the <strong>nhanesA</strong> package on September 28, 2026. Three tables were merged on the participant ID (SEQN):</p>
+<ul>
+<li><strong>P_DEMO</strong> for age, sex, and race/ethnicity</li>
+<li><strong>P_TRIGLY</strong> for LDL cholesterol (Friedewald equation, mg/dL)</li>
+<li><strong>P_BPXO</strong> for oscillometric blood pressure, averaged over two or three readings</li>
+</ul>
+<p>LDL is measured only in the morning fasting subsample, which is the main reason the final sample is smaller than the full survey:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Step</th>
+<th style="text-align: right;">Participants</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">All participants in P_DEMO</td>
+<td style="text-align: right;">15,560</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Interviewed and examined, age 45-79</td>
+<td style="text-align: right;">4,694</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">…with an LDL result (fasting subsample)</td>
+<td style="text-align: right;">2,180</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">…and complete data on every variable</td>
+<td style="text-align: right;">1,987</td>
+</tr>
+</tbody>
+</table>
+<p>Participants aged 80 were excluded because NHANES codes everyone 80 and older as 80. One participant had an LDL of 7 mg/dL; I kept this value, since very low LDL is plausible with intensive lipid-lowering therapy. Survey weights were not used, so the results describe this sample rather than the U.S. population as a whole.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the data ingest and cleaning code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># =============================================================================</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># prep_nhanes.R</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Ingest, merge, and clean NHANES 2017-March 2020 pre-pandemic data</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   P_DEMO   Demographics</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   P_TRIGLY LDL cholesterol (lab; fasting subsample only)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   P_BPXO   Oscillometric blood pressure (exam)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># =============================================================================</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nhanesA)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)   <span class="co"># tidyverse loaded last, per course convention</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>raw_dir <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(raw_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>get_nhanes <span class="ot">&lt;-</span> <span class="cf">function</span>(table) {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  path <span class="ot">&lt;-</span> <span class="fu">file.path</span>(raw_dir, <span class="fu">paste0</span>(table, <span class="st">".rds"</span>))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(path)) {</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nhanes</span>(table, <span class="at">translated =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">saveRDS</span>(path)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">readRDS</span>(path)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>demo_raw <span class="ot">&lt;-</span> <span class="fu">get_nhanes</span>(<span class="st">"P_DEMO"</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>trig_raw <span class="ot">&lt;-</span> <span class="fu">get_nhanes</span>(<span class="st">"P_TRIGLY"</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>bpxo_raw <span class="ot">&lt;-</span> <span class="fu">get_nhanes</span>(<span class="st">"P_BPXO"</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(demo_raw); <span class="fu">dim</span>(trig_raw); <span class="fu">dim</span>(bpxo_raw)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(trig_raw)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(bpxo_raw)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>demo <span class="ot">&lt;-</span> demo_raw <span class="sc">|&gt;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SEQN, RIDSTATR, RIAGENDR, RIDAGEYR, RIDRETH3)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>trig <span class="ot">&lt;-</span> trig_raw <span class="sc">|&gt;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SEQN, LBDLDL)                      <span class="co"># LDL-C, Friedewald, mg/dL</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>bpxo <span class="ot">&lt;-</span> bpxo_raw <span class="sc">|&gt;</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SEQN,</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>         BPXOSY1, BPXOSY2, BPXOSY3,         <span class="co"># systolic readings 1-3</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>         BPXODI1, BPXODI2, BPXODI3)         <span class="co"># diastolic readings 1-3</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>merged <span class="ot">&lt;-</span> demo <span class="sc">|&gt;</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(trig, <span class="at">by =</span> <span class="st">"SEQN"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(bpxo, <span class="at">by =</span> <span class="st">"SEQN"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(merged) <span class="sc">==</span> <span class="fu">nrow</span>(demo_raw)       <span class="co"># should be TRUE</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(merged<span class="sc">$</span>seqn) <span class="sc">==</span> <span class="fu">nrow</span>(merged)  <span class="co"># TRUE = no duplicate people</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>sbp_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bpxosy1"</span>, <span class="st">"bpxosy2"</span>, <span class="st">"bpxosy3"</span>)</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>dbp_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bpxodi1"</span>, <span class="st">"bpxodi2"</span>, <span class="st">"bpxodi3"</span>)</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>eligible <span class="ot">&lt;-</span> merged <span class="sc">|&gt;</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ridstatr <span class="sc">==</span> <span class="dv">2</span>, <span class="fu">between</span>(ridageyr, <span class="dv">45</span>, <span class="dv">79</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_bp =</span> <span class="fu">rowSums</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="fu">pick</span>(<span class="fu">all_of</span>(sbp_vars)))),</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">sbp  =</span> <span class="fu">if_else</span>(n_bp <span class="sc">&gt;=</span> <span class="dv">2</span>,</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">rowMeans</span>(<span class="fu">pick</span>(<span class="fu">all_of</span>(sbp_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="cn">NA_real_</span>),</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">dbp  =</span> <span class="fu">if_else</span>(n_bp <span class="sc">&gt;=</span> <span class="dv">2</span>,</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">rowMeans</span>(<span class="fu">pick</span>(<span class="fu">all_of</span>(dbp_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="cn">NA_real_</span>),</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>    <span class="at">sbp  =</span> <span class="fu">round</span>(sbp, <span class="dv">1</span>),</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">dbp  =</span> <span class="fu">round</span>(dbp, <span class="dv">1</span>),</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">age  =</span> ridageyr,</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">ldl  =</span> lbdldl,</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">sex =</span> <span class="fu">factor</span>(riagendr, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Male"</span>, <span class="st">"Female"</span>)),</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">race_eth =</span> <span class="fu">case_when</span>(</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>      ridreth3 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>) <span class="sc">~</span> <span class="st">"Hispanic"</span>,</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>      ridreth3 <span class="sc">==</span> <span class="dv">3</span>         <span class="sc">~</span> <span class="st">"NH White"</span>,</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>      ridreth3 <span class="sc">==</span> <span class="dv">4</span>         <span class="sc">~</span> <span class="st">"NH Black"</span>,</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>      ridreth3 <span class="sc">==</span> <span class="dv">6</span>         <span class="sc">~</span> <span class="st">"NH Asian"</span>,</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>      ridreth3 <span class="sc">==</span> <span class="dv">7</span>         <span class="sc">~</span> <span class="st">"Other/Multiracial"</span></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">race_eth =</span> <span class="fu">factor</span>(race_eth, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NH White"</span>, <span class="st">"NH Black"</span>, <span class="st">"Hispanic"</span>,</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>                                           <span class="st">"NH Asian"</span>, <span class="st">"Other/Multiracial"</span>))</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(eligible, sex)</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(eligible, race_eth)</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(eligible<span class="sc">$</span>sbp)</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>nh <span class="ot">&lt;-</span> eligible <span class="sc">|&gt;</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ldl), <span class="sc">!</span><span class="fu">is.na</span>(sbp), <span class="sc">!</span><span class="fu">is.na</span>(dbp),</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">is.na</span>(sex), <span class="sc">!</span><span class="fu">is.na</span>(race_eth), <span class="sc">!</span><span class="fu">is.na</span>(age)) <span class="sc">|&gt;</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a>    <span class="at">ldl_high =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>(ldl <span class="sc">&gt;=</span> <span class="dv">130</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>), <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Yes"</span>, <span class="st">"No"</span>)),</span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">ldl_cat =</span> <span class="fu">cut</span>(ldl,</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>                  <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="dv">100</span>, <span class="dv">130</span>, <span class="dv">160</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"&lt;100"</span>, <span class="st">"100-129"</span>, <span class="st">"130-159"</span>, <span class="st">"160+"</span>)),</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">bp_cat =</span> <span class="fu">case_when</span>(</span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a>      sbp <span class="sc">&gt;=</span> <span class="dv">140</span> <span class="sc">|</span> dbp <span class="sc">&gt;=</span> <span class="dv">90</span> <span class="sc">~</span> <span class="st">"Stage 2"</span>,</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>      sbp <span class="sc">&gt;=</span> <span class="dv">130</span> <span class="sc">|</span> dbp <span class="sc">&gt;=</span> <span class="dv">80</span> <span class="sc">~</span> <span class="st">"Stage 1"</span>,</span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>                   <span class="sc">~</span> <span class="st">"Normal/Elevated"</span></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">bp_cat =</span> <span class="fu">factor</span>(bp_cat, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Normal/Elevated"</span>, <span class="st">"Stage 1"</span>, <span class="st">"Stage 2"</span>)),</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">htn_range =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>(bp_cat <span class="sc">==</span> <span class="st">"Normal/Elevated"</span>, <span class="st">"No"</span>, <span class="st">"Yes"</span>),</span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a>                       <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Yes"</span>, <span class="st">"No"</span>)),</span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a>    <span class="at">ldl10 =</span> ldl <span class="sc">/</span> <span class="dv">10</span></span>
+<span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb1-110"><a href="#cb1-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(seqn, age, sex, race_eth, ldl, ldl10, ldl_high, ldl_cat,</span>
+<span id="cb1-111"><a href="#cb1-111" aria-hidden="true" tabindex="-1"></a>         sbp, dbp, bp_cat, htn_range)</span>
+<span id="cb1-112"><a href="#cb1-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-113"><a href="#cb1-113" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(nh)                        <span class="co"># must be between 500 and 7,500</span></span>
+<span id="cb1-114"><a href="#cb1-114" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(nh, ldl_high, htn_range)  <span class="co"># every cell &gt;= 30 (Analysis D)</span></span>
+<span id="cb1-115"><a href="#cb1-115" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(nh, ldl_cat)              <span class="co"># every group &gt;= 30 (Analysis C)</span></span>
+<span id="cb1-116"><a href="#cb1-116" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(nh<span class="sc">$</span>race_eth, nh<span class="sc">$</span>bp_cat)   <span class="co"># every cell &gt;= 15 (Analysis E)</span></span>
+<span id="cb1-117"><a href="#cb1-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-118"><a href="#cb1-118" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb1-119"><a href="#cb1-119" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Duplicate SEQN values"</span>         <span class="ot">=</span> <span class="sc">!</span><span class="fu">anyDuplicated</span>(nh<span class="sc">$</span>seqn),</span>
+<span id="cb1-120"><a href="#cb1-120" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sample outside 500-7,500 rule"</span> <span class="ot">=</span> <span class="fu">between</span>(<span class="fu">nrow</span>(nh), <span class="dv">500</span>, <span class="dv">7500</span>),</span>
+<span id="cb1-121"><a href="#cb1-121" aria-hidden="true" tabindex="-1"></a>  <span class="st">"LDL has &lt; 15 unique values"</span>    <span class="ot">=</span> <span class="fu">n_distinct</span>(nh<span class="sc">$</span>ldl) <span class="sc">&gt;=</span> <span class="dv">15</span>,</span>
+<span id="cb1-122"><a href="#cb1-122" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SBP has &lt; 15 unique values"</span>    <span class="ot">=</span> <span class="fu">n_distinct</span>(nh<span class="sc">$</span>sbp) <span class="sc">&gt;=</span> <span class="dv">15</span>,</span>
+<span id="cb1-123"><a href="#cb1-123" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Implausible LDL value"</span>         <span class="ot">=</span> <span class="fu">all</span>(nh<span class="sc">$</span>ldl <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> nh<span class="sc">$</span>ldl <span class="sc">&lt;</span> <span class="dv">500</span>),</span>
+<span id="cb1-124"><a href="#cb1-124" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Implausible SBP value"</span>         <span class="ot">=</span> <span class="fu">all</span>(<span class="fu">between</span>(nh<span class="sc">$</span>sbp, <span class="dv">60</span>, <span class="dv">260</span>)),</span>
+<span id="cb1-125"><a href="#cb1-125" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Implausible DBP value"</span>         <span class="ot">=</span> <span class="fu">all</span>(<span class="fu">between</span>(nh<span class="sc">$</span>dbp, <span class="dv">20</span>, <span class="dv">160</span>))</span>
+<span id="cb1-126"><a href="#cb1-126" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-127"><a href="#cb1-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-128"><a href="#cb1-128" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Sample flow, codebook, and save</span></span>
+<span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a><span class="co"># -----------------------------------------------------------------------------</span></span>
+<span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_demo       =</span> <span class="fu">nrow</span>(demo_raw),</span>
+<span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_eligible   =</span> <span class="fu">nrow</span>(eligible),</span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_with_ldl   =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(eligible<span class="sc">$</span>ldl)),</span>
+<span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_complete   =</span> <span class="fu">nrow</span>(nh),</span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a>  <span class="at">retrieved_on =</span> <span class="fu">as.Date</span>(<span class="fu">min</span>(<span class="fu">file.mtime</span>(<span class="fu">list.files</span>(raw_dir, <span class="at">full.names =</span> <span class="cn">TRUE</span>)))),</span>
+<span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a>  <span class="at">prepared_on  =</span> <span class="fu">Sys.Date</span>()</span>
+<span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>codebook <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>Variable,   <span class="sc">~</span>Type,    <span class="sc">~</span>Description,                                                <span class="sc">~</span>Original,</span>
+<span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>  <span class="st">"seqn"</span>,      <span class="st">"ID"</span>,     <span class="st">"Respondent sequence number"</span>,                                <span class="st">"SEQN"</span>,</span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a>  <span class="st">"age"</span>,       <span class="st">"Quant"</span>,  <span class="st">"Age at screening, years (45-79)"</span>,                           <span class="st">"RIDAGEYR"</span>,</span>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sex"</span>,       <span class="st">"Binary"</span>, <span class="st">"Sex: Male, Female"</span>,                                         <span class="st">"RIAGENDR"</span>,</span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a>  <span class="st">"race_eth"</span>,  <span class="st">"5-cat"</span>,  <span class="st">"Race/ethnicity: NH White, NH Black, Hispanic, NH Asian, Other/Multiracial"</span>, <span class="st">"RIDRETH3"</span>,</span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ldl"</span>,       <span class="st">"Quant"</span>,  <span class="st">"LDL cholesterol, Friedewald equation (mg/dL)"</span>,              <span class="st">"LBDLDL"</span>,</span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ldl_high"</span>,  <span class="st">"Binary"</span>, <span class="st">"LDL of 130 mg/dL or higher: Yes, No"</span>,                       <span class="st">"from LBDLDL"</span>,</span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ldl_cat"</span>,   <span class="st">"4-cat"</span>,  <span class="st">"LDL category (mg/dL): &lt;100, 100-129, 130-159, 160+"</span>,        <span class="st">"from LBDLDL"</span>,</span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sbp"</span>,       <span class="st">"Quant"</span>,  <span class="st">"Mean systolic BP of 2-3 oscillometric readings (mm Hg)"</span>,    <span class="st">"BPXOSY1-3"</span>,</span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a>  <span class="st">"dbp"</span>,       <span class="st">"Quant"</span>,  <span class="st">"Mean diastolic BP of 2-3 oscillometric readings (mm Hg)"</span>,   <span class="st">"BPXODI1-3"</span>,</span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bp_cat"</span>,    <span class="st">"3-cat"</span>,  <span class="st">"2017 ACC/AHA category: Normal/Elevated, Stage 1, Stage 2"</span>,  <span class="st">"from sbp, dbp"</span>,</span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a>  <span class="st">"htn_range"</span>, <span class="st">"Binary"</span>, <span class="st">"Measured BP of 130/80 or higher (Stage 1 or 2): Yes, No"</span>,   <span class="st">"from bp_cat"</span></span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(nh,       <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"nh_ldl_bp.rds"</span>))</span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(meta,     <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"nh_meta.rds"</span>))</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(codebook, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"nh_codebook.rds"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="hypotheses" class="level2">
+<h2 class="anchored" data-anchor-id="hypotheses">Hypotheses</h2>
+<p>Before looking at the results, I wrote down what I expected:</p>
+<ol type="1">
+<li>Adults with LDL of 130 mg/dL or higher have higher mean systolic blood pressure than adults with lower LDL.</li>
+<li>Mean systolic blood pressure rises steadily across LDL categories (below 100, 100-129, 130-159, and 160 or higher).</li>
+<li>Blood pressure of 130/80 or higher is more common among adults with LDL of 130 or higher.</li>
+<li>The mix of blood pressure categories differs across racial and ethnic groups.</li>
+<li>The LDL-blood pressure relationship is stronger in women than in men, and differs across racial and ethnic groups.</li>
+</ol>
+</section>
+<section id="how-i-built-the-dashboard" class="level2">
+<h2 class="anchored" data-anchor-id="how-i-built-the-dashboard">How I built the dashboard</h2>
+<p>The dashboard is a single Quarto file (<code>dashboard.qmd</code>) using the <code>format: dashboard</code> output, rendered as part of this website and hosted on GitHub Pages. All data cleaning lives in one R script, all statistics in another, and plotting functions in a third. Both the dashboard and this post read from the same analysis script, so their numbers cannot disagree. I organized the dashboard around five elements:</p>
+<p><strong>Purposeful design.</strong> The Overview page opens with five headline numbers (sample size, median LDL, the share with LDL of 130 or higher, the share with blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a reader knows the shape of the data before any test.</p>
+<p><strong>Effective visualizations.</strong> Each analysis pairs one chart with its test results: violin-and-box plots for comparing means, stacked percentage bars for comparing proportions, and a forest plot for the sex-by-ethnicity slopes.</p>
+<p><strong>User-friendly layout.</strong> Pages follow the order of the questions: overview, free exploration, comparisons of means, comparisons of proportions, the main sex-and-ethnicity question, and full data documentation. Every analysis page uses the same pattern of chart on top, then tabs for the takeaway, the estimates, and the group summaries.</p>
+<p><strong>Accurate data.</strong> Every number is computed at render time from the cleaned data, and the dashboard shows both the data-retrieval date and the time it was last rendered.</p>
+<p><strong>Accessibility.</strong> Colors come from the Okabe-Ito palette, which stays distinguishable for common color-vision deficiencies. Static charts carry alt text, and the layout reflows on phones.</p>
+<p>Because GitHub Pages only serves static files, the Explore page uses Observable JS rather than Shiny. The data are passed from R with <code>ojs_define()</code>, and the filters (sex, race/ethnicity, age range, and blood pressure measure) run entirely in the reader’s browser.</p>
+<p>Building it taught me a few things the hard way. A stray line of three dashes at the end of the file became a mysterious blank tab, which I finally found by inspecting the rendered page in my browser. And my Quarto setup silently dropped Observable chunks that only defined values, so I rewrote the chart and summary table as self-contained blocks that compute everything they need.</p>
+</section>
+<section id="what-i-found" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="what-i-found">What I found</h2>
+<p>All intervals are 90% confidence intervals.</p>
+<p><strong>Higher LDL did not mean higher average systolic blood pressure, at first glance.</strong> Comparing adults with LDL of 130 or higher to everyone else, the difference in mean systolic blood pressure was 0.9 (90% CI: -0.7 to 2.5) mm Hg (Welch’s t test). The interval includes zero, and pooled t, bootstrap, and Wilcoxon rank sum estimates all told the same story, so this result does not hinge on a normality assumption. Across four LDL categories, a one-way ANOVA gave F = 1.82 (p = 0.142), with 0 of 6 Tukey comparisons excluding zero, but LDL category explained only 0.3% of the variation in systolic blood pressure, so even where some groups differ, LDL category on its own tells us very little about a person’s blood pressure. Hypothesis 1 was not supported by this unadjusted comparison.</p>
+<p><strong>Hypertensive-range blood pressure was modestly more common with high LDL.</strong> Blood pressure of 130/80 or higher was found in 54.6% of adults with LDL of 130 or higher and 49.8% of those with lower LDL, a relative risk of 1.10 (90% CI: 1.02 to 1.18). This supports hypothesis 3. Why would this analysis find an association when the comparison of means did not? The 130/80 threshold also counts diastolic pressure, and it asks about crossing a cutoff rather than about the average, so a shift near the cutoff can show up here without moving the mean much.</p>
+<p><strong>Blood pressure categories differed across racial and ethnic groups.</strong> The chi-square test of independence gave 64.3 on 8 df (p &lt; 0.001), supporting hypothesis 4. Stage 2 blood pressure ranged from 20.5% of NH White adults to 39.1% of NH Black adults.</p>
+<div class="cell page-columns page-full">
+<div class="cell-output-display page-columns page-full">
+<div id="fig-bp-by-race" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked percentage bars of blood pressure category for five race and ethnicity groups.">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-bp-by-race-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-bp-by-race-1.png" class="img-fluid figure-img" alt="Stacked percentage bars of blood pressure category for five race and ethnicity groups." width="672">
+</div>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-bp-by-race-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Blood pressure category by race/ethnicity
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Age was hiding the LDL-blood pressure association.</strong> Older participants tended to have lower LDL (r = -0.17) but higher systolic blood pressure (r = 0.22). Because age pushes the two in opposite directions, it masks their relationship when age is ignored. After adjusting for age, sex, and race/ethnicity, each 10 mg/dL higher LDL went with a 0.36 (90% CI: 0.18 to 0.54) mm Hg higher mean systolic blood pressure. That is small per unit, but across a 100 mg/dL range of LDL it adds up to about 3.6 mm Hg.</p>
+<p><strong>The relationship was steeper in men, the opposite of what I expected.</strong> The age-adjusted slope was 0.46 (90% CI: 0.21 to 0.71) mm Hg per 10 mg/dL in men and 0.21 (90% CI: -0.05 to 0.47) in women. The test that directly compares the two slopes gave p = 0.064, which is modest evidence of a difference at my 90% standard. There was no evidence that the slope differed across racial and ethnic groups (p = 0.530). So hypothesis 5 was not supported: the sex difference ran in the other direction, and the ethnic differences did not appear.</p>
+<div class="cell page-columns page-full">
+<div class="cell-output-display page-columns page-full">
+<div id="fig-forest" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Forest plot of LDL-systolic blood pressure slopes with 90 percent confidence intervals for each race and ethnicity group, shown separately for men and women.">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-forest-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-forest-1.png" class="img-fluid figure-img" alt="Forest plot of LDL-systolic blood pressure slopes with 90 percent confidence intervals for each race and ethnicity group, shown separately for men and women." width="672">
+</div>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-forest-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by sex and race/ethnicity
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="putting-it-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-it-together">Putting it together</h2>
+<p>In adults aged 45 to 79, higher LDL goes with slightly higher blood pressure, but the association only becomes clear once age is taken into account, and it appears stronger in men than in women. The effect is modest for any one person, yet at the population level a few mm Hg of systolic pressure is meaningful. I can only guess at why the sex difference runs the way it does: statin use may differ between men and women, and changes around menopause may shift LDL and blood pressure somewhat independently. Both are ideas to test, not conclusions.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<ul>
+<li><strong>Cross-sectional data.</strong> Each person was measured once, so these are associations, not effects of LDL on blood pressure.</li>
+<li><strong>Medication use.</strong> Many adults in this age range take statins or blood pressure drugs. If people with high blood pressure are more likely to be on a statin, treatment could weaken or even reverse the LDL-blood pressure association seen here. The NHANES blood pressure and cholesterol questionnaire (P_BPQ) would allow adjusting for this.</li>
+<li><strong>Fasting subsample, no weights.</strong> LDL comes from a morning subsample, and I did not apply survey weights, so the results are not nationally representative.</li>
+<li><strong>Smaller groups.</strong> Estimates for NH Asian and Other/Multiracial adults rest on fewer participants and have wider intervals.</li>
+</ul>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>The natural next step is to add medication use from P_BPQ and refit the models, and to look at diastolic blood pressure alongside systolic. I would also like to try the Martin-Hopkins LDL estimate, which NHANES also provides and which is more accurate than the Friedewald equation when triglycerides are high.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../../posts/ldl-bp-dashboard";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "../..";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p><span class="faux-block">© 2026 Liam Wetzel CC BY-SA 4.0</span></p>
+</div>   
+    <div class="nav-footer-center">
+<p><span class="faux-block"><a href="https://www.marvinschmitt.com/blog/website-tutorial-quarto/">View the tutorial for this template!</a></span></p>
+</div>
+    <div class="nav-footer-right">
+<p><span class="faux-block"><a href="https://github.com/marvinschmitt/quarto-website-template/">View source on GitHub</a></span></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
