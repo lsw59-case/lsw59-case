@@ -139,6 +139,9 @@ plot_sbp_by_group(nh, ldl_high, "LDL of 130 mg/dL or higher")
 ### Row {.tabset height=45%}
 
 ::: {.card title="Takeaway"}
+Adults with high LDL (130 mg/dL or higher) have nearly the same average systolic blood pressure as adults with lower LDL. On its own, high LDL does not mark someone as having higher blood pressure.
+
+
 Difference in mean systolic BP (LDL of 130 or higher minus LDL below 130),
 Welch t: **`r fmt_ci(b_welch$estimate, b_welch$conf.low, b_welch$conf.high)` mm Hg**.
 The interval `r ci_position(b_welch$conf.low, b_welch$conf.high)` zero.
@@ -182,6 +185,13 @@ plot_sbp_by_group(nh, ldl_cat, "LDL category (mg/dL)")
 ### Row {.tabset height=45%}
 
 ::: {.card title="Takeaway"}
+Average systolic blood pressure
+`r if (all(diff(c_summary$mean) > 0)) "rises only slightly" else "does not rise steadily"`
+from the lowest to the highest LDL group. LDL group explains just
+`r fmt(100 * c_r2, 1)`% of the differences in blood pressure between people,
+so knowing someone's LDL category tells you very little about their blood
+pressure.
+
 One-way ANOVA: F = `r fmt(c_anova$statistic[1], 2)` on
 `r c_anova$df[1]` and `r c_anova$df[2]` df, `r fmt_p(c_anova$p.value[1])`.
 LDL category accounts for `r fmt(100 * c_r2, 1)`% of the variation in
@@ -227,6 +237,13 @@ plot_stacked_pct(nh, ldl_high, htn_range, pal_yesno,
 ### Row {.tabset height=45%}
 
 ::: {.card title="Takeaway"}
+Blood pressure in the hypertensive range (130/80 or higher) is somewhat more
+common among adults with high LDL: `r fmt(100 * d_results$estimate[1], 1)`%
+compared with `r fmt(100 * d_results$estimate[2], 1)`% of adults with lower
+LDL. That makes it about `r fmt(d_rr$estimate, 2)` times as likely (90% CI
+`r fmt(d_rr$conf.low, 2)` to `r fmt(d_rr$conf.high, 2)`), a modest but real
+difference.
+
 Share with BP of 130/80 or higher: **`r fmt(100 * d_results$estimate[1], 1)`%**
 with LDL of 130 or higher vs. **`r fmt(100 * d_results$estimate[2], 1)`%**
 with LDL below 130.
@@ -267,6 +284,12 @@ plot_stacked_pct(nh, race_eth, bp_cat, pal_bp, NULL, "BP category") +
 ### Row {.tabset height=45%}
 
 ::: {.card title="Takeaway"}
+Blood pressure differs clearly across racial and ethnic groups. Stage 2
+blood pressure is most common among `r as.character(last(stage2$race_eth))`
+adults (`r fmt(last(stage2$pct), 1)`%) and least common among
+`r as.character(stage2$race_eth[1])` adults (`r fmt(stage2$pct[1], 1)`%),
+about `r fmt(last(stage2$pct) / stage2$pct[1], 1)` times as common.
+
 Pearson chi-square = `r fmt(e_tidy$statistic, 2)` on `r e_tidy$parameter`
 df, `r fmt_p(e_tidy$p.value)`.
 
@@ -299,6 +322,22 @@ plot_strata_forest(strata_slopes)
 ### Column {width=35%}
 
 ::: {.card title="Answer to the main question"}
+Once age is taken into account, higher LDL goes with slightly higher blood
+pressure: about `r fmt(main_slope$estimate, 2)` mm Hg per 10 mg/dL of LDL, or
+roughly `r fmt(10 * main_slope$estimate, 1)` mm Hg across a 100 mg/dL range.
+The relationship looks stronger in men than in women (modest evidence,
+`r fmt_p(int_sex$p.value)`) and is similar across racial and ethnic groups
+(`r fmt_p(int_race$p.value)`).
+
+Interact Test: Does the LDL-blood pressure slope differ between groups?
+
+Model 1: one shared LDL slope for everyone (adjusted for age, sex, and race/ethnicity)
+Model 2: the same model, but the LDL slope is allowed to differ by sex (or by race/ethnicity)
+
+F measures how much better Model 2 fits the data, relative to the random noise in blood pressure between people. An F around 1 means letting the slopes differ improves the fit by about as much as you'd expect from chance alone. A larger F means a bigger improvement than chance would typically produce.
+
+p is the probability of seeing an improvement at least this large if the slopes were truly the same in every group. A small p means that result would be surprising if the slopes were really equal, which is evidence that they differ. It is not the probability that the slopes are equal.
+
 Across all adults, adjusting for age, sex, and race/ethnicity, each 10 mg/dL
 higher LDL goes with a
 **`r fmt_ci(main_slope$estimate, main_slope$conf.low, main_slope$conf.high, 2)` mm Hg**

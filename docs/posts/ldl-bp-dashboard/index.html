@@ -273,7 +273,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>Participants aged 80 were excluded because NHANES codes everyone 80 and older as 80. One participant had an LDL of 7 mg/dL; I kept this value, since very low LDL is plausible with intensive lipid-lowering therapy. Survey weights were not used, so the results describe this sample rather than the U.S. population as a whole.</p>
+<p>Participants aged 80 were excluded because NHANES codes everyone aged 80 and older as “80”. One participant had an LDL of 7 mg/dL; I kept this value, since very low LDL is plausible with intensive lipid-lowering therapy. Survey weights were not used, so the results describe this sample rather than the U.S. population as a whole.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the data ingest and cleaning code</summary>
@@ -506,10 +506,10 @@ Figure&nbsp;2: Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by se
 <section id="how-i-built-the-dashboard" class="level2">
 <h2 class="anchored" data-anchor-id="how-i-built-the-dashboard">How I built the dashboard</h2>
 <p>The dashboard is a single Quarto file (<code>dashboard.qmd</code>) using the <code>format: dashboard</code> output, rendered as part of this website and hosted on GitHub Pages. All data cleaning lives in one R script, all statistics in another, and plotting functions in a third. Both the dashboard and this post read from the same analysis script, so their numbers cannot disagree. I organized the dashboard around five elements:</p>
-<p><strong>Purposeful design.</strong> The Overview page opens with five headline numbers (sample size, median LDL, the share with LDL of 130 or higher, the share with blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a reader knows the shape of the data before any test.</p>
-<p><strong>Effective visualizations.</strong> Each analysis pairs one chart with its test results: violin-and-box plots for comparing means, stacked percentage bars for comparing proportions, and a forest plot for the sex-by-ethnicity slopes.</p>
-<p><strong>User-friendly layout.</strong> Pages follow the order of the questions: overview, free exploration, comparisons of means, comparisons of proportions, the main sex-and-ethnicity question, and full data documentation. Every analysis page uses the same pattern of chart on top, then tabs for the takeaway, the estimates, and the group summaries.</p>
-<p><strong>Accurate data.</strong> Every number is computed at render time from the cleaned data, and the dashboard shows both the data-retrieval date and the time it was last rendered.</p>
+<p><strong>Design.</strong> The Overview page opens with five headline numbers (sample size, median LDL, the share with LDL of 130 or higher, the share with blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a reader knows the shape of the data before any test.</p>
+<p><strong>Visualizations.</strong> Each analysis pairs one chart with its test results: violin-and-box plots for comparing means, stacked percentage bars for comparing proportions, and a forest plot for the sex-by-ethnicity slopes.</p>
+<p><strong>Layout.</strong> Pages follow the order of the questions: overview, free exploration, comparisons of means, comparisons of proportions, the main sex-and-ethnicity question, and full data documentation. Every analysis page uses the same pattern of chart on top, then tabs for the takeaway, the estimates, and the group summaries.</p>
+<p><strong>Data Accuracy.</strong> Every number is computed at render time from the cleaned data, and the dashboard shows both the data-retrieval date and the time it was last rendered.</p>
 <p><strong>Accessibility.</strong> Colors come from the Okabe-Ito palette, which stays distinguishable for common color-vision deficiencies. Static charts carry alt text, and the layout reflows on phones.</p>
 
 

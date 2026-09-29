@@ -84,8 +84,8 @@ reason the final sample is smaller than the full survey:
 | ...with an LDL result (fasting subsample) | `r fmt(meta$n_with_ldl, 0)` |
 | ...and complete data on every variable | `r fmt(meta$n_complete, 0)` |
 
-Participants aged 80 were excluded because NHANES codes everyone 80 and older
-as 80. One participant had an LDL of `r min(nh$ldl)` mg/dL; I kept this
+Participants aged 80 were excluded because NHANES codes everyone aged 80 and older
+as "80". One participant had an LDL of `r min(nh$ldl)` mg/dL; I kept this
 value, since very low LDL is plausible with intensive lipid-lowering therapy.
 Survey weights were not used, so the results describe this sample rather than
 the U.S. population as a whole.
@@ -234,22 +234,22 @@ another, and plotting functions in a third. Both the dashboard and this post
 read from the same analysis script, so their numbers cannot disagree. I
 organized the dashboard around five elements:
 
-**Purposeful design.** The Overview page opens with five headline numbers
+**Design.** The Overview page opens with five headline numbers
 (sample size, median LDL, the share with LDL of 130 or higher, the share with
 blood pressure of 130/80 or higher, and the raw LDL-SBP correlation), so a
 reader knows the shape of the data before any test.
 
-**Effective visualizations.** Each analysis pairs one chart with its test
+**Visualizations.** Each analysis pairs one chart with its test
 results: violin-and-box plots for comparing means, stacked percentage bars for
 comparing proportions, and a forest plot for the sex-by-ethnicity slopes.
 
-**User-friendly layout.** Pages follow the order of the questions: overview,
+**Layout.** Pages follow the order of the questions: overview,
 free exploration, comparisons of means, comparisons of proportions, the main
 sex-and-ethnicity question, and full data documentation. Every analysis page
 uses the same pattern of chart on top, then tabs for the takeaway, the
 estimates, and the group summaries.
 
-**Accurate data.** Every number is computed at render time from the cleaned
+**Data Accuracy.** Every number is computed at render time from the cleaned
 data, and the dashboard shows both the data-retrieval date and the time it was
 last rendered.
 
