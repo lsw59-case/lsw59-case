@@ -233,13 +233,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="why-this-question" class="level2">
-<h2 class="anchored" data-anchor-id="why-this-question">Why this question?</h2>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>High LDL cholesterol and high blood pressure are two of the most important modifiable risk factors for heart attack and stroke, and they often show up in the same people. I wanted to know whether, in a large sample of U.S. adults, people with higher LDL also tend to have higher blood pressure, or whether the two risk factors travel more independently than we might assume.</p>
 <p>I focused on adults aged 45 to 79 for two reasons. Both LDL and blood pressure typically climb through midlife, and this is the age range where women’s cardiovascular risk profile shifts around menopause, which makes a comparison of men and women especially interesting. I also compared racial and ethnic groups, since the burden of hypertension in the United States is not evenly shared.</p>
 </section>
 <section id="the-data" class="level2">
-<h2 class="anchored" data-anchor-id="the-data">The data</h2>
+<h2 class="anchored" data-anchor-id="the-data">The Data</h2>
 <p>I used the National Health and Nutrition Examination Survey (NHANES) 2017-March 2020 pre-pandemic files, pulled into R with the <strong>nhanesA</strong> package on September 28, 2026. Three tables were merged on the participant ID (SEQN):</p>
 <ul>
 <li><strong>P_DEMO</strong> for age, sex, and race/ethnicity</li>
@@ -449,8 +449,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>The LDL-blood pressure relationship is stronger in women than in men, and differs across racial and ethnic groups.</li>
 </ol>
 </section>
-<section id="what-i-found" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="what-i-found">What I found</h2>
+<section id="results" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
 <p>All intervals are 90% confidence intervals.</p>
 <p><strong>Higher LDL did not mean higher average systolic blood pressure, at first glance.</strong> Comparing adults with LDL of 130 or higher to everyone else, the difference in mean systolic blood pressure was 0.9 (90% CI: -0.7 to 2.5) mm Hg (Welch’s t test). The interval includes zero, and pooled t, bootstrap, and Wilcoxon rank sum estimates all told the same story, so this result does not hinge on a normality assumption. Across four LDL categories, a one-way ANOVA gave F = 1.82 (p = 0.142), with 0 of 6 Tukey comparisons excluding zero, but LDL category explained only 0.3% of the variation in systolic blood pressure, so even where some groups differ, LDL category on its own tells us very little about a person’s blood pressure. Hypothesis 1 was not supported by this unadjusted comparison.</p>
 <p><strong>Hypertensive-range blood pressure was modestly more common with high LDL.</strong> Blood pressure of 130/80 or higher was found in 54.6% of adults with LDL of 130 or higher and 49.8% of those with lower LDL, a relative risk of 1.10 (90% CI: 1.02 to 1.18). This supports hypothesis 3. Why would this analysis find an association when the comparison of means did not? The 130/80 threshold also counts diastolic pressure, and it asks about crossing a cutoff rather than about the average, so a shift near the cutoff can show up here without moving the mean much.</p>
@@ -486,8 +486,8 @@ Figure&nbsp;2: Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by se
 </div>
 </div>
 </section>
-<section id="putting-it-together" class="level2">
-<h2 class="anchored" data-anchor-id="putting-it-together">Putting it together</h2>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">Conclusions</h2>
 <p>In adults aged 45 to 79, higher LDL goes with slightly higher blood pressure, but the association only becomes clear once age is taken into account, and it appears stronger in men than in women. The effect is modest for any one person, yet at the population level a few mm Hg of systolic pressure is meaningful. I can only guess at why the sex difference runs the way it does: statin use may differ between men and women, and changes around menopause may shift LDL and blood pressure somewhat independently. Both are ideas to test, not conclusions.</p>
 </section>
 <section id="limitations" class="level2">
@@ -499,12 +499,12 @@ Figure&nbsp;2: Age-adjusted change in systolic BP per 10 mg/dL higher LDL, by se
 <li><strong>Smaller groups.</strong> Estimates for NH Asian and Other/Multiracial adults rest on fewer participants and have wider intervals.</li>
 </ul>
 </section>
-<section id="whats-next" class="level2">
-<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<section id="future-analyses" class="level2">
+<h2 class="anchored" data-anchor-id="future-analyses">Future Analyses</h2>
 <p>The natural next step is to add medication use from P_BPQ and refit the models, and to look at diastolic blood pressure alongside systolic. I would also like to try the Martin-Hopkins LDL estimate, which NHANES also provides and which is more accurate than the Friedewald equation when triglycerides are high.</p>
 </section>
-<section id="how-i-built-the-dashboard" class="level2">
-<h2 class="anchored" data-anchor-id="how-i-built-the-dashboard">How I built the dashboard</h2>
+<section id="about-the-dashboard" class="level2">
+<h2 class="anchored" data-anchor-id="about-the-dashboard">About the Dashboard</h2>
 <p>The dashboard is a Quarto file using <code>format: dashboard</code>, published with the rest of this site on GitHub Pages. Data cleaning, statistics, and plotting each live in their own R script, and this post reads from the same analysis script, so the numbers always match. The Overview page leads with five headline numbers and an interactive scatter plot. Each analysis page pairs a chart with tabs for the takeaway, the estimates, and the group summaries, and a Data page documents every variable along with retrieval and render dates. Colors are safe for color-blind readers (from the Okabe-Ito palette), and every static chart has alt text.</p>
 
 

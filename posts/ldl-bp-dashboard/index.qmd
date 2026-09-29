@@ -48,7 +48,7 @@ female <- sex_slopes |> filter(sex == "Female")
 ```
 
 
-## Why this question?
+## Introduction
 
 High LDL cholesterol and high blood pressure are two of the most important
 modifiable risk factors for heart attack and stroke, and they often show up in
@@ -63,7 +63,7 @@ of men and women especially interesting. I also compared racial and ethnic
 groups, since the burden of hypertension in the United States is not evenly
 shared.
 
-## The data
+## The Data
 
 I used the National Health and Nutrition Examination Survey (NHANES)
 2017-March 2020 pre-pandemic files, pulled into R with the **nhanesA**
@@ -114,7 +114,7 @@ Before looking at the results, I wrote down what I expected:
    differs across racial and ethnic groups.
 
 
-## What I found
+## Results
 
 All intervals are 90% confidence intervals.
 
@@ -191,7 +191,7 @@ differences did not appear.
 plot_strata_forest(strata_slopes)
 ```
 
-## Putting it together
+## Conclusions
 
 In adults aged 45 to 79, higher LDL goes with slightly higher blood pressure,
 but the association only becomes clear once age is taken into account, and it
@@ -217,7 +217,7 @@ conclusions.
 - **Smaller groups.** Estimates for NH Asian and Other/Multiracial adults rest
   on fewer participants and have wider intervals.
 
-## What's next
+## Future Analyses
 
 The natural next step is to add medication use from P_BPQ and refit the
 models, and to look at diastolic blood pressure alongside systolic. I would
@@ -225,7 +225,7 @@ also like to try the Martin-Hopkins LDL estimate, which NHANES also provides
 and which is more accurate than the Friedewald equation when triglycerides are
 high.
 
-## How I built the dashboard
+## About the Dashboard
 
 The dashboard is a Quarto file using `format: dashboard`, published with the
 rest of this site on GitHub Pages. Data cleaning, statistics, and plotting
