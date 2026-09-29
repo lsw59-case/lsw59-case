@@ -158,7 +158,7 @@
     "href": "posts/ldl-bp-dashboard/index.html#conclusions",
     "title": "Does LDL Cholesterol Track with Blood Pressure After Age 45?",
     "section": "Conclusions",
-    "text": "Conclusions\nIn adults aged 45 to 79, higher LDL goes with slightly higher blood pressure, but the association only becomes clear once age is taken into account, and it appears stronger in men than in women. The effect is modest for any one person, yet at the population level a few mm Hg of systolic pressure is meaningful. I can only guess at why the sex difference runs the way it does: statin use may differ between men and women, and changes around menopause may shift LDL and blood pressure somewhat independently. Both are ideas to test, not conclusions."
+    "text": "Conclusions\nIn adults aged 45 to 79, higher LDL goes with slightly higher blood pressure, but the association only becomes clear once age is taken into account, and it appears stronger in men than in women. The effect is modest for any one person, yet at the population level a few mm Hg of systolic pressure is meaningful. My assumption as to why we see this sex-based effect is that statin use may differ between men and women, and changes around menopause may shift LDL and blood pressure somewhat independently."
   },
   {
     "objectID": "posts/ldl-bp-dashboard/index.html#future-analyses",
@@ -172,6 +172,6 @@
     "href": "posts/ldl-bp-dashboard/index.html#about-the-dashboard",
     "title": "Does LDL Cholesterol Track with Blood Pressure After Age 45?",
     "section": "About the Dashboard",
-    "text": "About the Dashboard\nThe dashboard is a Quarto file using format: dashboard, published with the rest of this site on GitHub Pages. Data cleaning, statistics, and plotting each live in their own R script, and this post reads from the same analysis script, so the numbers always match. The Overview page leads with five headline numbers and an interactive scatter plot. Each analysis page pairs a chart with tabs for the takeaway, the estimates, and the group summaries, and a Data page documents every variable along with retrieval and render dates. Colors are safe for color-blind readers (from the Okabe-Ito palette), and every static chart has alt text."
+    "text": "About the Dashboard\nThe dashboard is a Quarto file using format: dashboard, published with the rest of this site on GitHub Pages. Data cleaning, statistics, and plotting each live in their own R script, and this post reads from the same analysis script, ensuring that the numbers match between the pages. The Overview page leads with five headline numbers and an interactive scatter plot. Each analysis page pairs a chart with tabs for the takeaway, the estimates, and the group summaries, and a Data page documents every variable along with retrieval and render dates. Colors are safe for color-blind readers (from the Okabe-Ito palette), and every static chart has alt text."
   }
 ]
